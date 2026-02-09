@@ -55,12 +55,14 @@ Install the MCP Context Protector wrapper script on the client host.
 
 ```bash
 # Example installation
-git clone https://github.com/your-repo/mcp-context-protector
+git clone https://github.com/happytesting-chen/MCP_CONTECT_PROTECTOR.git
 cd mcp-context-protector
-chmod +x mcp-context-protector.sh
 ```
 
-#### 2️⃣ Configure the MCP Client
+#### 2️⃣ Start the remote MCP Server: 
+python3 server.py 
+
+#### 3️⃣  Configure the MCP Client
 
 Configure your MCP client (e.g., Cursor, Claude Desktop) to launch MCP Context Protector instead of connecting directly to the MCP server.
 
