@@ -52,7 +52,7 @@ MCP Context Protector enforces a **default-deny security posture** with human-in
 #### 1️⃣ Install MCP Context Protector
 
 Install the MCP Context Protector wrapper script on the client host.
-
+```
 #### Example installation
 ###### Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -61,7 +61,7 @@ git clone https://github.com/happytesting-chen/MCP_CONTECT_PROTECTOR.git
 ###### Install dependencies
 cd MCP_CONTECT_PROTECTOR
 uv sync
-
+```
 
 #### 2️⃣ Start the remote MCP Server: 
 python3 server.py 
