@@ -56,8 +56,13 @@ Install the MCP Context Protector wrapper script on the client host.
 ```bash
 # Example installation
 git clone https://github.com/happytesting-chen/MCP_CONTECT_PROTECTOR.git
-cd mcp-context-protector
+cd MCP_CONTECT_PROTECTOR
+uv sync
 ```
+# create virtual envrioment and install the dependent packages
+python3 -m venv .venv
+source .venv/bin/activate 
+pip install -r requirement.txt 
 
 #### 2️⃣ Start the remote MCP Server: 
 python3 server.py 
