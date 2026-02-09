@@ -62,10 +62,6 @@ git clone https://github.com/happytesting-chen/MCP_CONTECT_PROTECTOR.git
 cd MCP_CONTECT_PROTECTOR
 uv sync
 
-# create virtual envrioment and install the dependent packages
-python3 -m venv .venv
-source .venv/bin/activate 
-pip install -r requirement.txt 
 
 #### 2️⃣ Start the remote MCP Server: 
 python3 server.py 
