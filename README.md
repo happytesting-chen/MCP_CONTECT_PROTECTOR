@@ -53,12 +53,12 @@ MCP Context Protector enforces a **default-deny security posture** with human-in
 
 Install the MCP Context Protector wrapper script on the client host.
 
-# Example installation
-# Install uv
+#### Example installation
+###### Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
-# Download mcp-context-protector
+###### Download mcp-context-protector
 git clone https://github.com/happytesting-chen/MCP_CONTECT_PROTECTOR.git
-# Install dependencies
+###### Install dependencies
 cd MCP_CONTECT_PROTECTOR
 uv sync
 
