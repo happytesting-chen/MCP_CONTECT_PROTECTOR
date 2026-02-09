@@ -1,173 +1,282 @@
-Protection Workflow (End-to-End)
+# 🛡️ MCP Context Protector - Protection Workflow
 
-This section describes the complete protection lifecycle, from initial setup to runtime enforcement, using MCP Context Protector as a runtime security layer for MCP-based tools.
+> **Runtime Security Layer for Model Context Protocol (MCP) Tools**
 
-Step 1 — Enable MCP Context Protector (Default-Deny Applied)
+This document describes the complete protection lifecycle, from initial setup to runtime enforcement, using MCP Context Protector as a runtime security layer for MCP-based tools.
 
-This step inserts MCP Context Protector into the MCP communication path and enforces a default-deny security posture.
+---
 
-What You Do (One-Time Setup)
-1. Install MCP Context Protector
+## 📋 Table of Contents
+
+- [Overview](#overview)
+- [Workflow Diagram](#workflow-diagram)
+- [Step 1: Enable Protection](#step-1--enable-mcp-context-protector)
+- [Step 2: Review & Approve](#step-2--review-and-approve-mcp-server)
+- [Step 3: Runtime Scanning](#step-3--runtime-tool-invocation-and-response-scanning)
+- [Step 4: Monitoring](#step-4--monitoring-and-visibility)
+- [Step 5: Quarantine Handling](#step-5--quarantine-handling-and-operator-action)
+- [Security Boundaries](#security-boundaries)
+
+---
+
+## 🎯 Overview
+
+MCP Context Protector enforces a **default-deny security posture** with human-in-the-loop approval and runtime response inspection to prevent malicious MCP tool outputs from reaching LLMs.
+
+### Key Principles
+
+- ✅ **Default-Deny**: New servers blocked until explicitly approved
+- 👤 **Human Approval**: Trust decisions require operator review
+- 🔍 **Runtime Inspection**: Behavioral analysis of tool responses
+- 🚫 **Response Blocking**: Suspicious outputs quarantined before reaching LLM
+
+---
+
+## 🔄 Workflow Diagram
+
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Install   │───▶│   Review    │───▶│    Scan     │───▶│  Quarantine │───▶│   Monitor   │
+│  Protection │    │  & Approve  │    │  Responses  │    │   Threats   │    │  & Review   │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+```
+
+---
+
+## 📥 Step 1 — Enable MCP Context Protector
+
+> **Objective**: Insert MCP Context Protector into the communication path and apply default-deny security
+
+### What You Do (One-Time Setup)
+
+#### 1️⃣ Install MCP Context Protector
 
 Install the MCP Context Protector wrapper script on the client host.
 
-2. Configure the MCP client to use the wrapper
+```bash
+# Example installation
+git clone https://github.com/your-repo/mcp-context-protector
+cd mcp-context-protector
+chmod +x mcp-context-protector.sh
+```
 
-Configure your MCP client (for example, Cursor) to launch MCP Context Protector instead of connecting directly to the MCP server.
+#### 2️⃣ Configure the MCP Client
 
-Example: mcp.json (Cursor)
+Configure your MCP client (e.g., Cursor, Claude Desktop) to launch MCP Context Protector instead of connecting directly to the MCP server.
+
+**Example: `mcp.json` (Cursor)**
+
+```json
 {
   "kali-remote-mcp-wrapper": {
     "command": "/mnt/c/Users/Intern/Documents/mitigation/mcp-context-protector/mcp-context-protector.sh",
     "args": [
-      "--sse-url",
-      "http://192.168.174.129:8000/sse",
-      "--guardrail-provider",
-      "Claude"
+      "--sse-url", "http://192.168.174.129:8000/sse",
+      "--guardrail-provider", "Claude"
     ],
     "env": {
       "ANTHROPIC_API_KEY": "sk-ant-xxxx"
     }
   }
 }
+```
 
-What Happens Automatically
+### What Happens Automatically
 
-All MCP traffic is routed through MCP Context Protector
+| Action | Result |
+|--------|--------|
+| 🔀 **Traffic Routing** | All MCP traffic is routed through MCP Context Protector |
+| 🔒 **Default State** | MCP server detected but remains **UNTRUSTED** by default |
+| 🚫 **Tool Visibility** | All exposed tools appear as `context-protector-block` |
 
-The MCP server is detected but remains untrusted by default
+### 🔐 Security Principle
 
-All exposed tools appear as:
+> **Default-Deny**: Newly discovered MCP servers are **blocked by default** until explicitly approved by a human operator.
 
-context-protector-block
+---
 
-Security Principle
+## 👁️ Step 2 — Review and Approve MCP Server
 
-Default-Deny
-Newly discovered MCP servers are blocked by default until explicitly approved by a human operator.
+> **Objective**: Human-in-the-loop trust decision before tools can be used
 
-Step 2 — Review and Approve MCP Server (Human-in-the-Loop Trust)
+### Review Commands
 
-Before any tools can be used, the MCP server must be explicitly reviewed and trusted.
-
-Review Commands
-
-Review all unapproved servers:
-
+**Review all unapproved servers:**
+```bash
 ./mcp-context-protector.sh --review-all-servers
+```
 
+**Review a specific server:**
+```bash
+./mcp-context-protector.sh --review-server --sse-url http://192.168.174.129:8000/sse
+```
 
-Review a specific server:
+### What Is Reviewed
 
-./mcp-context-protector.sh \
-  --review-server \
-  --sse-url http://192.168.174.129:8000/sse
+Only **MCP server metadata** is reviewed:
 
-What Is Reviewed
+- ✅ Tool names
+- ✅ Tool descriptions
+- ✅ Input schemas
+- ✅ Output schemas
 
-Only MCP server metadata is reviewed:
+### What Is NOT Reviewed
 
-Tool names
+- ❌ Tool execution
+- ❌ Runtime tool behavior
+- ❌ Tool responses
+- ❌ MCP server source code
 
-Tool descriptions
-
-Input schemas
-
-Output schemas
-
-What Is NOT Reviewed
-
-Tool execution
-
-Runtime tool behavior
-
-Tool responses
-
-MCP server source code
-
-Result of Approval
+### Result of Approval
 
 Once approved:
 
-The MCP server is marked as trusted
+| Before | After |
+|--------|-------|
+| 🚫 Server untrusted | ✅ Server marked as **trusted** |
+| 🔒 Tools blocked | 🔓 Tools **visible and callable** in MCP client |
 
-Tools become visible and callable in the MCP client
+---
 
-Step 3 — Runtime Tool Invocation and Response Scanning
+## 🔍 Step 3 — Runtime Tool Invocation and Response Scanning
 
-After the server is trusted, tools can be used normally.
+> **Objective**: Active protection during production use
 
-At runtime, MCP Context Protector:
+After the server is trusted, tools can be used normally. At runtime, MCP Context Protector:
 
-Proxies every MCP tool invocation
+### Protection Flow
 
-Intercepts all tool responses
+```
+1. 📤 Proxy every MCP tool invocation
+        ↓
+2. 🔍 Intercept all tool responses
+        ↓
+3. 🤖 Send responses to guardrail provider (e.g., Claude)
+        ↓
+4. 🛡️ Block or quarantine suspicious responses before they reach the LLM
+```
 
-Sends responses to the configured guardrail provider (e.g. Claude)
+### Inspection Model
 
-Blocks or quarantines suspicious responses before they reach the LLM
+| Feature | Description |
+|---------|-------------|
+| **Runtime Behavioral Inspection** | Analyzes tool behavior during execution |
+| **Response-Level Enforcement** | Blocks at the response level, not code level |
+| **No Static Analysis** | Does not scan MCP server source code |
 
-Inspection Model
+---
 
-Runtime behavioral inspection
+## 📊 Step 4 — Monitoring and Visibility
 
-Response-level enforcement
+> **Objective**: Real-time observability of security activity
 
-No static analysis
+### View MCP Logs in Cursor
 
-Step 4 — Monitoring and Visibility
+1. Press `Ctrl + Shift + P`
+2. Select `Developer: Show Logs`
+3. Choose `MCP`
 
-Security activity is observable in real time.
+### What You Can See
 
-View MCP Logs in Cursor
+- ✅ **Guardrail scan decisions** — What was allowed or blocked
+- ⚠️ **Quarantine events** — When responses were quarantined
+- 📊 **Runtime enforcement outcomes** — Overall security posture
 
-Press Ctrl + Shift + P
+### Example Log Output
 
-Select Developer: Show Logs
+```
+[2024-02-09 14:32:15] ✓ Tool invocation: file_read - ALLOWED
+[2024-02-09 14:32:18] ⚠️ Response scan: SUSPICIOUS pattern detected
+[2024-02-09 14:32:18] 🛡️ Action: QUARANTINED - blocked from LLM context
+[2024-02-09 14:32:22] ✓ Tool invocation: web_search - ALLOWED
+```
 
-Choose MCP
+---
 
-What You Can See
+## 🗃️ Step 5 — Quarantine Handling and Operator Action
 
-Guardrail scan decisions
+> **Objective**: Review and respond to blocked threats
 
-Quarantine events
+### Quarantine Storage
 
-Runtime enforcement outcomes
+View quarantined responses:
 
-Step 5 — Quarantine Handling and Operator Action
-Quarantine Storage
+```bash
 cat ~/.mcp-context-protector/quarantine.json
+```
 
-What Quarantine Means
+### What Quarantine Means
 
-Only the specific tool response instance is blocked
+| Scope | Status |
+|-------|--------|
+| ⚠️ Specific response instance | ❌ **Blocked** |
+| 🔧 Tool itself | ✅ **Remains callable** |
+| 🌐 MCP server connection | ✅ **Stays connected** |
 
-The tool itself remains callable
+> **Important**: Only the suspicious response is blocked — the tool and server remain operational.
 
-The MCP server remains connected
+### Operator Responsibility
 
-Operator Responsibility
+If a server or tool is confirmed malicious:
 
-If a server or tool is malicious:
+1. **Manually remove or disable it** in the MCP client configuration, OR
+2. **Enforce upstream MCP server access controls**
 
-Manually remove or disable it in the MCP client configuration, or
+---
 
-Enforce upstream MCP server access controls
+## ⚠️ Security Boundaries
 
-Important Limitation (Security Boundary)
+### What MCP Context Protector DOES
 
-⚠️ MCP Context Protector does NOT:
+| Capability | Description |
+|------------|-------------|
+| ✅ Runtime detection & containment | Detects threats during execution |
+| ✅ Response-level inspection | Scans tool responses before LLM |
+| ✅ Default-deny onboarding | Blocks unknown servers by default |
+| ✅ Human-approved trust | Requires operator approval |
+| ✅ Quarantine suspicious outputs | Blocks malicious responses |
+| ✅ Real-time monitoring | Provides visibility into security events |
 
-Disable tools permanently
+### What MCP Context Protector Does NOT Do
 
-Remove MCP servers automatically
+| Limitation | Explanation |
+|------------|-------------|
+| ❌ Disable tools permanently | Tools remain callable after quarantine |
+| ❌ Remove MCP servers automatically | Operator must manually remove malicious servers |
+| ❌ Sandbox or execute MCP tools | Not an execution environment |
+| ❌ Perform static code scanning | Does not analyze server source code |
+| ❌ Act as a firewall | Not a network-level security control |
+| ❌ Prevent all attack vectors | Defense-in-depth layer, not complete protection |
 
-Sandbox or execute MCP tools
+### 🎯 Positioning
 
-Perform static code scanning
+> **MCP Context Protector is a runtime detection and containment layer — NOT a firewall, static code scanner, or execution sandbox.**
 
-Positioning
+It complements other security controls and should be part of a defense-in-depth strategy.
 
-MCP Context Protector is a runtime detection and containment layer,
-not a firewall, static code scanner, or execution sandbox.
+---
+
+## 📝 Summary
+
+MCP Context Protector provides:
+
+- 🔒 **Default-deny security** — New servers blocked until human approval
+- 🔍 **Runtime protection** — Scans tool responses before they reach LLM
+- 🔄 **Transparent proxy** — Sits between client and server invisibly
+- 👤 **Operator-driven** — Security decisions require human review
+- 🛡️ **Detection layer** — Complements but doesn't replace other controls
+
+---
+
+## 📚 Additional Resources
+
+- [Installation Guide](#)
+- [Configuration Reference](#)
+- [Troubleshooting](#)
+- [Security Best Practices](#)
+
+---
+
+**License**: [Your License Here]  
+**Maintainer**: [Your Name/Team]  
+**Version**: 1.0.0
