@@ -51,6 +51,12 @@ MCP Context Protector enforces a **default-deny security posture** with human-in
 
 #### 1️⃣ Install MCP Context Protector
 
+Prerequisites
+```
+Python 3.11 or higher
+uv package manager
+```
+
 Install the MCP Context Protector wrapper script on the client host.
 ```
 # Example installation
