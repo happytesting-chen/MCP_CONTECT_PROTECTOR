@@ -82,6 +82,7 @@ Configure your MCP client (e.g., Cursor, Claude Desktop) to launch MCP Context P
 
 ```json
 {
+"mcpServers": {
   "kali-remote-mcp-wrapper": {
     "command": "/mnt/c/Users/Intern/Documents/mitigation/mcp-context-protector/mcp-context-protector.sh",
     "args": [
@@ -92,6 +93,7 @@ Configure your MCP client (e.g., Cursor, Claude Desktop) to launch MCP Context P
       "ANTHROPIC_API_KEY": "sk-ant-xxxx"
     }
   }
+}
 }
 ```
 
