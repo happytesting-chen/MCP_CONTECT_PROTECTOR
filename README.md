@@ -72,7 +72,7 @@ uv sync
 #### 2️⃣ Start the remote MCP Server: 
 ```
 # run this command
-python3 server.py 
+python3 main.py ## main.py under server folder
 ```
 
 #### 3️⃣  Configure the MCP Client
