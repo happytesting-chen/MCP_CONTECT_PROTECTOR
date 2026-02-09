@@ -56,6 +56,7 @@ Install the MCP Context Protector wrapper script on the client host.
 # Example installation
 # Install uv
 curl -LsSf https://astral.sh/uv/install.sh | sh
+# Download mcp-context-protector
 git clone https://github.com/happytesting-chen/MCP_CONTECT_PROTECTOR.git
 # Install dependencies
 cd MCP_CONTECT_PROTECTOR
