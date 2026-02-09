@@ -1,3 +1,9 @@
 #!/bin/bash
+cd "$(dirname "$0")"
 
-uv --directory $(dirname "$0") run mcp-context-protector "$@"
+# Load .env file if it exists
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
+
+/home/fengmin/.local/bin/uv run mcp-context-protector "$@"

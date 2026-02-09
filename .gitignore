@@ -6,3 +6,7 @@ __pycache__/
 .idea
 html/
 dist/
+.cursor 
+.github 
+.env
+

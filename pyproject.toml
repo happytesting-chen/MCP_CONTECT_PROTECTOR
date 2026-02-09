@@ -16,6 +16,7 @@ dependencies = [
     "mcp==1.9.4",
     "llamafirewall>=1.0.3",
     "aiofiles>=24.1.0",
+    "anthropic>=0.78.0",
 ]
 requires-python = ">=3.11"
 
